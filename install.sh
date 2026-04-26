@@ -28,6 +28,8 @@ install_nvim() {
 }
 
 stow_packages() {
+  # pre-create dirs stow would otherwise swallow wholesale
+  mkdir -p "$HOME/.config"
   cd "$DOTFILES"
   for pkg in nvim tmux shell; do
     echo "stowing $pkg..."
