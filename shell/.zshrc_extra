@@ -1,0 +1,9 @@
+# sourced from ~/.zshrc — add: [ -f ~/.zshrc_extra ] && source ~/.zshrc_extra
+
+source ~/.aliases
+
+export EDITOR=nvim
+export VISUAL=nvim
+
+# put local bins on path
+export PATH="$HOME/.local/bin:$PATH"

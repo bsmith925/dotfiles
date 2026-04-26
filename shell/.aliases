@@ -1,0 +1,23 @@
+# navigation
+alias ..="cd .."
+alias ...="cd ../.."
+alias ll="ls -lah"
+
+# git
+alias gs="git status"
+alias gd="git diff"
+alias gl="git log --oneline --graph --decorate -20"
+alias gp="git push"
+
+# tmux
+alias ta="tmux new -A -s"      # ta <name>  — attach or create
+alias tl="tmux ls"
+alias tk="tmux kill-session -t"
+
+# editors
+alias v="nvim"
+alias vi="nvim"
+
+# tools
+alias rg="rg --smart-case"
+alias fd="fdfind"               # Debian names it fdfind
