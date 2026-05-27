@@ -66,6 +66,7 @@ install_go() {
     | python3 -c "import sys,json; d=json.load(sys.stdin); print(next(v['version'] for v in d if v['stable']))")
   local tmp; tmp=$(mktemp -d)
   curl -fL "https://go.dev/dl/${ver}.linux-${go_arch}.tar.gz" -o "$tmp/go.tar.gz"
+  mkdir -p "$HOME/.local"
   tar -xf "$tmp/go.tar.gz" -C "$HOME/.local/"
   rm -rf "$tmp"
   echo "installed $("$gobin" version)"

@@ -41,11 +41,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Containers run as root — maybe_sudo handles this, but git needs a
-      # safe.directory allowance when the workspace is owned by a different uid
-      - name: git safe directory
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
       - name: install
         run: ./install.sh
 
