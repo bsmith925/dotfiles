@@ -101,11 +101,13 @@ link_packages() {
 
 wire_shell() {
   local bashrc="$HOME/.bashrc"
-  [ -f "$bashrc" ] && ! grep -q "bashrc_extra" "$bashrc" \
-    && echo '[ -f ~/.bashrc_extra ] && source ~/.bashrc_extra' >> "$bashrc"
+  if [ -f "$bashrc" ] && ! grep -q "bashrc_extra" "$bashrc"; then
+    echo '[ -f ~/.bashrc_extra ] && source ~/.bashrc_extra' >> "$bashrc"
+  fi
   local zshrc="$HOME/.zshrc"
-  [ -f "$zshrc" ] && ! grep -q "zshrc_extra" "$zshrc" \
-    && echo '[ -f ~/.zshrc_extra ] && source ~/.zshrc_extra' >> "$zshrc"
+  if [ -f "$zshrc" ] && ! grep -q "zshrc_extra" "$zshrc"; then
+    echo '[ -f ~/.zshrc_extra ] && source ~/.zshrc_extra' >> "$zshrc"
+  fi
 }
 
 install_packages
