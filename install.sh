@@ -63,7 +63,7 @@ install_go() {
   esac
   local ver
   ver=$(curl -fsSL "https://go.dev/dl/?mode=json" \
-    | python3 -c "import sys,json; d=json.load(sys.stdin); print(next(v['version'] for v in d if v['stable']))")
+    | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)
   local tmp; tmp=$(mktemp -d)
   curl -fL "https://go.dev/dl/${ver}.linux-${go_arch}.tar.gz" -o "$tmp/go.tar.gz"
   mkdir -p "$HOME/.local"
@@ -92,7 +92,7 @@ stow_packages() {
   cd "$DOTFILES"
   for pkg in nvim tmux ghostty shell; do
     echo "stowing $pkg..."
-    stow --target="$HOME" --restow "$pkg"
+    stow --no-folding --target="$HOME" --restow "$pkg"
   done
 }
 

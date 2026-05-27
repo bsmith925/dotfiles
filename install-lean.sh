@@ -42,7 +42,7 @@ stow_packages() {
   cd "$DOTFILES"
   for pkg in nvim tmux shell; do
     echo "stowing $pkg..."
-    stow --target="$HOME" --restow "$pkg"
+    stow --no-folding --target="$HOME" --restow "$pkg"
   done
 }
 
