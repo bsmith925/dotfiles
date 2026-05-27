@@ -1,6 +1,6 @@
-# sourced from ~/.zshrc — add: [ -f ~/.zshrc_extra ] && source ~/.zshrc_extra
+# sourced from ~/.bashrc — add: [ -f ~/.bashrc_extra ] && source ~/.bashrc_extra
 
-source ~/.aliases
+[ -f ~/.aliases ] && source ~/.aliases
 
 export EDITOR=nvim
 export VISUAL=nvim
