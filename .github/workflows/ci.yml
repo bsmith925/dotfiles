@@ -1,0 +1,79 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  # ── Ubuntu x86_64 ────────────────────────────────────────────────────────
+  ubuntu:
+    name: ubuntu-latest (x86_64)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo
+            ~/.rustup
+          key: rust-${{ runner.arch }}-${{ hashFiles('install.sh') }}
+          restore-keys: rust-${{ runner.arch }}-
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/go
+          key: go-${{ runner.arch }}-${{ hashFiles('install.sh') }}
+
+      - name: install
+        run: ./install.sh
+
+      - name: test
+        run: bash test.sh
+
+  # ── Debian Bookworm x86_64 ───────────────────────────────────────────────
+  debian:
+    name: debian-bookworm (x86_64)
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm
+    steps:
+      - uses: actions/checkout@v4
+
+      # Containers run as root — maybe_sudo handles this, but git needs a
+      # safe.directory allowance when the workspace is owned by a different uid
+      - name: git safe directory
+        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+
+      - name: install
+        run: ./install.sh
+
+      - name: test
+        run: bash test.sh
+
+  # ── Ubuntu ARM64 ─────────────────────────────────────────────────────────
+  ubuntu-arm:
+    name: ubuntu-24.04 (arm64)
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo
+            ~/.rustup
+          key: rust-${{ runner.arch }}-${{ hashFiles('install.sh') }}
+          restore-keys: rust-${{ runner.arch }}-
+
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/go
+          key: go-${{ runner.arch }}-${{ hashFiles('install.sh') }}
+
+      - name: install
+        run: ./install.sh
+
+      - name: test
+        run: bash test.sh
