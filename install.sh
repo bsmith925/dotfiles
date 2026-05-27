@@ -17,7 +17,7 @@ maybe_sudo() { [ "$(id -u)" -eq 0 ] && "$@" || sudo "$@"; }
 install_packages() {
   maybe_sudo apt-get update -qq
   maybe_sudo apt-get install -y \
-    git curl unzip stow tmux ripgrep fd-find \
+    git curl unzip tmux ripgrep fd-find \
     build-essential xclip fontconfig
 }
 
@@ -87,11 +87,15 @@ install_nerdfont() {
   echo "font installed"
 }
 
-stow_packages() {
-  mkdir -p "$HOME/.config"
+link_packages() {
+  local pkg src dst
   for pkg in nvim tmux ghostty shell; do
-    echo "stowing $pkg..."
-    stow --dir "$DOTFILES" --no-folding --target="$HOME" --restow "$pkg"
+    echo "linking $pkg..."
+    while IFS= read -r src; do
+      dst="$HOME/${src#"$DOTFILES/$pkg/"}"
+      mkdir -p "$(dirname "$dst")"
+      ln -sfn "$src" "$dst"
+    done < <(find "$DOTFILES/$pkg" -type f)
   done
 }
 
@@ -109,7 +113,7 @@ install_nvim
 install_rust
 install_go
 install_nerdfont
-stow_packages
+link_packages
 wire_shell
 
 echo ""

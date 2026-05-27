@@ -15,7 +15,7 @@ maybe_sudo() { [ "$(id -u)" -eq 0 ] && "$@" || sudo "$@"; }
 
 install_packages() {
   maybe_sudo apt-get update -qq
-  maybe_sudo apt-get install -y git curl unzip stow tmux ripgrep fd-find build-essential
+  maybe_sudo apt-get install -y git curl unzip tmux ripgrep fd-find build-essential
 }
 
 install_nvim() {
@@ -37,11 +37,15 @@ install_nvim() {
   rm -rf "$tmp"
 }
 
-stow_packages() {
-  mkdir -p "$HOME/.config"
+link_packages() {
+  local pkg src dst
   for pkg in nvim tmux shell; do
-    echo "stowing $pkg..."
-    stow --dir "$DOTFILES" --no-folding --target="$HOME" --restow "$pkg"
+    echo "linking $pkg..."
+    while IFS= read -r src; do
+      dst="$HOME/${src#"$DOTFILES/$pkg/"}"
+      mkdir -p "$(dirname "$dst")"
+      ln -sfn "$src" "$dst"
+    done < <(find "$DOTFILES/$pkg" -type f)
   done
 }
 
@@ -56,7 +60,7 @@ wire_shell() {
 
 install_packages
 install_nvim
-stow_packages
+link_packages
 wire_shell
 
 touch "$HOME/.nvim_lean"

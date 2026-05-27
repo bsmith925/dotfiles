@@ -19,14 +19,17 @@ done
 # ── symlinks ─────────────────────────────────────────────────────────────────
 echo "symlinks"
 check_link() {
-  local path="$1" fragment="$2"
-  if [ -L "$path" ] && readlink "$path" | grep -q "$fragment"; then
-    pass "$path → dotfiles"
-  else
-    fail "$path is not a symlink into dotfiles (got: $(readlink "$path" 2>/dev/null || echo 'missing'))"
-  fi
+  local target="$1" fragment="$2" check="$1"
+  while [ "$check" != "/" ]; do
+    if [ -L "$check" ] && readlink "$check" | grep -q "$fragment"; then
+      pass "$target → dotfiles"; return
+    fi
+    [ "$check" = "$HOME" ] && break
+    check="$(dirname "$check")"
+  done
+  fail "$target not linked into dotfiles ($(readlink "$target" 2>/dev/null || echo 'missing'))"
 }
-check_link "$HOME/.config/nvim"               "dotfiles/nvim"
+check_link "$HOME/.config/nvim/init.lua"      "dotfiles/nvim"
 check_link "$HOME/.config/tmux/tmux.conf"     "dotfiles/tmux"
 check_link "$HOME/.aliases"                   "dotfiles/shell"
 check_link "$HOME/.bashrc_extra"              "dotfiles/shell"
