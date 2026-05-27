@@ -63,7 +63,7 @@ install_go() {
   esac
   local ver
   ver=$(curl -fsSL "https://go.dev/dl/?mode=json" \
-    | grep -o '"version":"[^"]*"' | head -1 | cut -d'"' -f4)
+    | tr -d ' \t' | grep -o '"version":"go[^"]*"' | head -1 | cut -d'"' -f4)
   local tmp; tmp=$(mktemp -d)
   curl -fL "https://go.dev/dl/${ver}.linux-${go_arch}.tar.gz" -o "$tmp/go.tar.gz"
   mkdir -p "$HOME/.local"
@@ -89,10 +89,9 @@ install_nerdfont() {
 
 stow_packages() {
   mkdir -p "$HOME/.config"
-  cd "$DOTFILES"
   for pkg in nvim tmux ghostty shell; do
     echo "stowing $pkg..."
-    stow --no-folding --target="$HOME" --restow "$pkg"
+    stow --dir "$DOTFILES" --no-folding --target="$HOME" --restow "$pkg"
   done
 }
 

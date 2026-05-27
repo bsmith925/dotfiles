@@ -39,10 +39,9 @@ install_nvim() {
 
 stow_packages() {
   mkdir -p "$HOME/.config"
-  cd "$DOTFILES"
   for pkg in nvim tmux shell; do
     echo "stowing $pkg..."
-    stow --no-folding --target="$HOME" --restow "$pkg"
+    stow --dir "$DOTFILES" --no-folding --target="$HOME" --restow "$pkg"
   done
 }
 
