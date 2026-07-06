@@ -149,5 +149,6 @@ link_packages
 wire_shell
 
 echo ""
-echo "done. open a new shell and run: tmux new -A -s dev"
+echo "done. launch the terminal with: ghostty   (or pick Ghostty from the app menu)"
+echo "then, in a new shell, run: tmux new -A -s dev"
 echo "first nvim launch will install plugins automatically."
