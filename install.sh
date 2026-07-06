@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Full install: nvim + tmux + shell + Rust + Go + NerdFont + ghostty (terminal + config)
+# Full install: nvim + tmux + shell + Rust + Go + gh + NerdFont + ghostty (terminal + config)
 set -euo pipefail
 
 # Linux only — macOS support not wired yet
@@ -70,6 +70,31 @@ install_go() {
   tar -xf "$tmp/go.tar.gz" -C "$HOME/.local/"
   rm -rf "$tmp"
   echo "installed $("$gobin" version)"
+}
+
+install_gh() {
+  # GitHub CLI — used for auth + SSH key setup. User-scoped, no sudo.
+  if [ -x "$HOME/.local/bin/gh" ] || command -v gh &>/dev/null; then
+    echo "gh already installed: $(gh --version 2>/dev/null | head -1)"; return
+  fi
+  echo "installing gh ($ARCH)..."
+  local gh_arch
+  case "$ARCH" in
+    x86_64)  gh_arch="amd64" ;;
+    aarch64) gh_arch="arm64" ;;
+    *) echo "error: unsupported arch $ARCH for gh install" >&2; exit 1 ;;
+  esac
+  local ver
+  ver=$(curl -fsSL "https://api.github.com/repos/cli/cli/releases/latest" \
+    | grep -oP '"tag_name": "v\K[^"]*')
+  local tmp; tmp=$(mktemp -d)
+  curl -fL "https://github.com/cli/cli/releases/download/v${ver}/gh_${ver}_linux_${gh_arch}.tar.gz" \
+    -o "$tmp/gh.tar.gz"
+  tar -xf "$tmp/gh.tar.gz" -C "$tmp"
+  mkdir -p "$HOME/.local/bin"
+  install -m755 "$tmp/gh_${ver}_linux_${gh_arch}/bin/gh" "$HOME/.local/bin/gh"
+  rm -rf "$tmp"
+  echo "installed $("$HOME/.local/bin/gh" --version | head -1)"
 }
 
 install_nerdfont() {
@@ -143,6 +168,7 @@ install_packages
 install_nvim
 install_rust
 install_go
+install_gh
 install_nerdfont
 install_ghostty
 link_packages
