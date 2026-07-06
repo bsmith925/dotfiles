@@ -10,7 +10,7 @@ fail() { echo "  ✗ $1" >&2; (( FAIL++ )) || true; }
 
 # ── syntax ──────────────────────────────────────────────────────────────────
 echo "syntax"
-for f in install.sh install-lean.sh shell/.aliases shell/.bashrc_extra shell/.zshrc_extra; do
+for f in install.sh install-lean.sh install-font.sh shell/.aliases shell/.bashrc_extra shell/.zshrc_extra; do
   bash -n "$DOTFILES/$f" \
     && pass "$f" \
     || fail "$f has syntax errors"

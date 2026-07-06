@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Full install: nvim + tmux + ghostty + shell + Rust + Go + NerdFont
+# Full install: nvim + tmux + shell + Rust + Go + NerdFont + ghostty (terminal + config)
 set -euo pipefail
 
 # Linux only — macOS support not wired yet
@@ -73,18 +73,47 @@ install_go() {
 }
 
 install_nerdfont() {
-  if fc-list 2>/dev/null | grep -qi "JetBrainsMono Nerd Font"; then
-    echo "JetBrainsMono Nerd Font already installed"; return
+  # Monospaced Nerd Font install lives in a standalone, cross-platform script.
+  "$DOTFILES/install-font.sh"
+}
+
+install_ghostty() {
+  # GNOME Terminal (Mint's default) can't render Nerd Fonts without huge
+  # inter-glyph gaps, so we install ghostty — its config is linked below.
+  if command -v ghostty &>/dev/null; then
+    echo "ghostty already installed: $(ghostty --version | head -1)"; return
   fi
-  echo "installing JetBrainsMono Nerd Font..."
-  mkdir -p "$HOME/.local/share/fonts/NerdFonts"
+  if ! command -v apt-get &>/dev/null; then
+    echo "ghostty auto-install is apt-only; install manually: https://ghostty.org/download"
+    return
+  fi
+  echo "installing ghostty..."
+  # shellcheck disable=SC1091
+  . /etc/os-release
+  # Mint & other derivatives report their own VERSION_ID, so map the Ubuntu
+  # base codename to the version the community .debs are built against.
+  local ubu
+  case "${UBUNTU_CODENAME:-}" in
+    noble)    ubu=24.04 ;;
+    oracular) ubu=24.10 ;;
+    plucky)   ubu=25.04 ;;
+    questing) ubu=25.10 ;;
+    *)        ubu="${VERSION_ID:-}" ;;   # real Ubuntu already uses 24.04-style
+  esac
+  local deb_arch; deb_arch=$(dpkg --print-architecture)
+  local url
+  url=$(curl -fsSL "https://api.github.com/repos/mkasberg/ghostty-ubuntu/releases/latest" \
+    | grep -oP '"browser_download_url": "\K[^"]*' \
+    | grep "_${deb_arch}_${ubu}\.deb$" | head -1 || true)
+  if [ -z "$url" ]; then
+    echo "no ghostty .deb for ${deb_arch}/${ubu}; install manually: https://ghostty.org/download"
+    return
+  fi
   local tmp; tmp=$(mktemp -d)
-  curl -fL "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz" \
-    -o "$tmp/JetBrainsMono.tar.xz"
-  tar -xf "$tmp/JetBrainsMono.tar.xz" -C "$HOME/.local/share/fonts/NerdFonts/"
-  fc-cache -f "$HOME/.local/share/fonts/" 2>/dev/null || true
+  curl -fL "$url" -o "$tmp/ghostty.deb"
+  maybe_sudo apt-get install -y "$tmp/ghostty.deb"
   rm -rf "$tmp"
-  echo "font installed"
+  echo "installed $(ghostty --version | head -1)"
 }
 
 link_packages() {
@@ -115,6 +144,7 @@ install_nvim
 install_rust
 install_go
 install_nerdfont
+install_ghostty
 link_packages
 wire_shell
 
