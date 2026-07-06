@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Full install: nvim + tmux + shell + Rust + Go + gh + NerdFont + ghostty (terminal + config)
+# Full install: nvim + tmux + shell + Rust + Go + Node + gh + lazygit + tree-sitter
+#               + fzf + NerdFont + ghostty (terminal + config)
 set -euo pipefail
 
 # Linux only — macOS support not wired yet
@@ -97,6 +98,109 @@ install_gh() {
   echo "installed $("$HOME/.local/bin/gh" --version | head -1)"
 }
 
+install_lazygit() {
+  # LazyVim's git UI (<leader>gg). Single static binary, no sudo.
+  if command -v lazygit &>/dev/null; then
+    echo "lazygit already installed: $(lazygit --version | head -1)"; return
+  fi
+  echo "installing lazygit ($ARCH)..."
+  local lg_arch
+  case "$ARCH" in
+    x86_64)  lg_arch="x86_64" ;;
+    aarch64) lg_arch="arm64" ;;
+    *) echo "error: unsupported arch $ARCH for lazygit install" >&2; exit 1 ;;
+  esac
+  local ver
+  ver=$(curl -fsSL "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" \
+    | grep -oP '"tag_name": "v\K[^"]*')
+  local tmp; tmp=$(mktemp -d)
+  curl -fL "https://github.com/jesseduffield/lazygit/releases/download/v${ver}/lazygit_${ver}_linux_${lg_arch}.tar.gz" \
+    -o "$tmp/lazygit.tar.gz"
+  tar -xf "$tmp/lazygit.tar.gz" -C "$tmp" lazygit
+  mkdir -p "$HOME/.local/bin"
+  install -m755 "$tmp/lazygit" "$HOME/.local/bin/lazygit"
+  rm -rf "$tmp"
+  echo "installed $("$HOME/.local/bin/lazygit" --version | head -1)"
+}
+
+install_treesitter() {
+  # tree-sitter CLI — lets nvim-treesitter build/install missing parsers.
+  if command -v tree-sitter &>/dev/null; then
+    echo "tree-sitter already installed: $(tree-sitter --version)"; return
+  fi
+  echo "installing tree-sitter CLI ($ARCH)..."
+  local ts_arch
+  case "$ARCH" in
+    x86_64)  ts_arch="x64" ;;
+    aarch64) ts_arch="arm64" ;;
+    *) echo "error: unsupported arch $ARCH for tree-sitter install" >&2; exit 1 ;;
+  esac
+  local ver
+  ver=$(curl -fsSL "https://api.github.com/repos/tree-sitter/tree-sitter/releases/latest" \
+    | grep -oP '"tag_name": "\K[^"]*')
+  local tmp; tmp=$(mktemp -d)
+  curl -fL "https://github.com/tree-sitter/tree-sitter/releases/download/${ver}/tree-sitter-linux-${ts_arch}.gz" \
+    -o "$tmp/tree-sitter.gz"
+  gunzip "$tmp/tree-sitter.gz"
+  mkdir -p "$HOME/.local/bin"
+  install -m755 "$tmp/tree-sitter" "$HOME/.local/bin/tree-sitter"
+  rm -rf "$tmp"
+  echo "installed tree-sitter $("$HOME/.local/bin/tree-sitter" --version)"
+}
+
+install_node() {
+  # Node LTS — required for mason to install JS-based LSPs/formatters
+  # (e.g. markdownlint-cli2). Extracted under ~/.local/node, no sudo.
+  if command -v node &>/dev/null || [ -x "$HOME/.local/node/bin/node" ]; then
+    echo "node already installed: $(node --version 2>/dev/null || "$HOME/.local/node/bin/node" --version)"; return
+  fi
+  echo "installing node LTS ($ARCH)..."
+  local node_arch
+  case "$ARCH" in
+    x86_64)  node_arch="x64" ;;
+    aarch64) node_arch="arm64" ;;
+    *) echo "error: unsupported arch $ARCH for node install" >&2; exit 1 ;;
+  esac
+  local ver
+  ver=$(curl -fsSL "https://nodejs.org/dist/index.json" \
+    | tr '{' '\n' | grep '"lts":"' | head -1 | grep -oP '"version":"\K[^"]*')
+  local tmp; tmp=$(mktemp -d)
+  curl -fL "https://nodejs.org/dist/${ver}/node-${ver}-linux-${node_arch}.tar.gz" -o "$tmp/node.tar.gz"
+  rm -rf "$HOME/.local/node"
+  mkdir -p "$HOME/.local/node"
+  tar -xf "$tmp/node.tar.gz" -C "$HOME/.local/node" --strip-components=1
+  mkdir -p "$HOME/.local/bin"
+  local b
+  for b in node npm npx; do ln -sfn "$HOME/.local/node/bin/$b" "$HOME/.local/bin/$b"; done
+  rm -rf "$tmp"
+  echo "installed node $("$HOME/.local/node/bin/node" --version)"
+}
+
+install_fzf() {
+  # Fuzzy finder used by Snacks/Telescope pickers. Single static binary.
+  if command -v fzf &>/dev/null; then
+    echo "fzf already installed: $(fzf --version)"; return
+  fi
+  echo "installing fzf ($ARCH)..."
+  local fzf_arch
+  case "$ARCH" in
+    x86_64)  fzf_arch="amd64" ;;
+    aarch64) fzf_arch="arm64" ;;
+    *) echo "error: unsupported arch $ARCH for fzf install" >&2; exit 1 ;;
+  esac
+  local ver
+  ver=$(curl -fsSL "https://api.github.com/repos/junegunn/fzf/releases/latest" \
+    | grep -oP '"tag_name": "v\K[^"]*')
+  local tmp; tmp=$(mktemp -d)
+  curl -fL "https://github.com/junegunn/fzf/releases/download/v${ver}/fzf-${ver}-linux_${fzf_arch}.tar.gz" \
+    -o "$tmp/fzf.tar.gz"
+  tar -xf "$tmp/fzf.tar.gz" -C "$tmp" fzf
+  mkdir -p "$HOME/.local/bin"
+  install -m755 "$tmp/fzf" "$HOME/.local/bin/fzf"
+  rm -rf "$tmp"
+  echo "installed fzf $("$HOME/.local/bin/fzf" --version)"
+}
+
 install_nerdfont() {
   # Monospaced Nerd Font install lives in a standalone, cross-platform script.
   "$DOTFILES/install-font.sh"
@@ -169,6 +273,10 @@ install_nvim
 install_rust
 install_go
 install_gh
+install_lazygit
+install_treesitter
+install_node
+install_fzf
 install_nerdfont
 install_ghostty
 link_packages
