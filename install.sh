@@ -166,7 +166,17 @@ install_treesitter() {
   mkdir -p "$HOME/.local/bin"
   install -m755 "$tmp/tree-sitter" "$HOME/.local/bin/tree-sitter"
   rm -rf "$tmp"
-  echo "installed tree-sitter $("$HOME/.local/bin/tree-sitter" --version)"
+  # The release binary is dynamically linked against a recent glibc. On older
+  # systems (e.g. Debian Bookworm, glibc 2.36) it installs but can't run, so
+  # verify it executes and drop it with a clear warning rather than leaving a
+  # broken binary that silently "succeeds".
+  if "$HOME/.local/bin/tree-sitter" --version &>/dev/null; then
+    echo "installed tree-sitter $("$HOME/.local/bin/tree-sitter" --version)"
+  else
+    rm -f "$HOME/.local/bin/tree-sitter"
+    echo "WARNING: tree-sitter $TREE_SITTER_VERSION won't run on this system (likely glibc too old);" >&2
+    echo "         skipping it. nvim-treesitter falls back to its prebuilt parsers." >&2
+  fi
 }
 
 install_node() {

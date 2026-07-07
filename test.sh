@@ -59,6 +59,35 @@ else
   fail "nvim not found"
 fi
 
+# ── tools ─────────────────────────────────────────────────────────────────────
+# For every tool install.sh may set up, assert that if it is present it actually
+# runs. This catches installed-but-broken binaries (e.g. a release built against
+# a newer glibc than the host provides). Tools that are legitimately absent — the
+# lean profile, or an unsupported system — are skipped, not failed.
+echo "tools"
+export PATH="$HOME/.local/bin:$HOME/.local/go/bin:$HOME/.cargo/bin:$PATH"
+check_runs() {   # <name> <cmd> [args...]
+  local name="$1"; shift
+  if ! command -v "$1" &>/dev/null; then
+    echo "  - $name skipped (not installed)"; return
+  fi
+  if "$@" &>/dev/null; then
+    pass "$name runs"
+  else
+    fail "$name is installed but won't run"
+  fi
+}
+check_runs "rustc"       rustc --version
+check_runs "go"          go version
+check_runs "gh"          gh --version
+check_runs "lazygit"     lazygit --version
+check_runs "tree-sitter" tree-sitter --version
+check_runs "node"        node --version
+check_runs "fzf"         fzf --version
+check_runs "rg"          rg --version
+check_runs "fdfind"      fdfind --version
+check_runs "ghostty"     ghostty --version
+
 # ── summary ──────────────────────────────────────────────────────────────────
 echo ""
 echo "${PASS} passed, ${FAIL} failed"
