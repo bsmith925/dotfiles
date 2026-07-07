@@ -12,6 +12,9 @@ fi
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ARCH="$(uname -m)"   # x86_64 or aarch64
 
+# Retry transient network errors on downloads (flaky HTTP/2, refused conns).
+CURL_RETRY=(--retry 3 --retry-delay 2 --retry-connrefused)
+
 # ── pinned tool versions ─────────────────────────────────────────────────────
 # Single source of truth. To upgrade a tool: bump its line, commit, and re-run
 # ./install.sh — the version-aware guards below will replace the old binary.
@@ -60,7 +63,7 @@ install_nvim() {
   esac
   echo "installing neovim $NVIM_VERSION ($ARCH)..."
   local tmp; tmp=$(mktemp -d)
-  curl -sL "https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${tarball}" \
+  curl -sL "${CURL_RETRY[@]}" "https://github.com/neovim/neovim/releases/download/v${NVIM_VERSION}/${tarball}" \
     | tar xz -C "$tmp"
   maybe_sudo rm -rf /opt/nvim
   maybe_sudo mv "$tmp/$dir" /opt/nvim
@@ -74,7 +77,7 @@ install_rust() {
     echo "rust already installed: $(~/.cargo/bin/rustc --version 2>/dev/null || rustc --version)"; return
   fi
   echo "installing rust via rustup..."
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+  curl --proto '=https' --tlsv1.2 -sSf "${CURL_RETRY[@]}" https://sh.rustup.rs | sh -s -- -y --no-modify-path
   "$HOME/.cargo/bin/rustup" component add rust-analyzer
 }
 
@@ -92,7 +95,7 @@ install_go() {
     *) echo "error: unsupported arch $ARCH for go install" >&2; exit 1 ;;
   esac
   local tmp; tmp=$(mktemp -d)
-  curl -fL "https://go.dev/dl/go${GO_VERSION}.linux-${go_arch}.tar.gz" -o "$tmp/go.tar.gz"
+  curl -fL "${CURL_RETRY[@]}" "https://go.dev/dl/go${GO_VERSION}.linux-${go_arch}.tar.gz" -o "$tmp/go.tar.gz"
   rm -rf "$HOME/.local/go"
   mkdir -p "$HOME/.local"
   tar -xf "$tmp/go.tar.gz" -C "$HOME/.local/"
@@ -114,7 +117,7 @@ install_gh() {
     *) echo "error: unsupported arch $ARCH for gh install" >&2; exit 1 ;;
   esac
   local tmp; tmp=$(mktemp -d)
-  curl -fL "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${gh_arch}.tar.gz" \
+  curl -fL "${CURL_RETRY[@]}" "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_${gh_arch}.tar.gz" \
     -o "$tmp/gh.tar.gz"
   tar -xf "$tmp/gh.tar.gz" -C "$tmp"
   mkdir -p "$HOME/.local/bin"
@@ -137,7 +140,7 @@ install_lazygit() {
     *) echo "error: unsupported arch $ARCH for lazygit install" >&2; exit 1 ;;
   esac
   local tmp; tmp=$(mktemp -d)
-  curl -fL "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_linux_${lg_arch}.tar.gz" \
+  curl -fL "${CURL_RETRY[@]}" "https://github.com/jesseduffield/lazygit/releases/download/v${LAZYGIT_VERSION}/lazygit_${LAZYGIT_VERSION}_linux_${lg_arch}.tar.gz" \
     -o "$tmp/lazygit.tar.gz"
   tar -xf "$tmp/lazygit.tar.gz" -C "$tmp" lazygit
   mkdir -p "$HOME/.local/bin"
@@ -160,7 +163,7 @@ install_treesitter() {
     *) echo "error: unsupported arch $ARCH for tree-sitter install" >&2; exit 1 ;;
   esac
   local tmp; tmp=$(mktemp -d)
-  curl -fL "https://github.com/tree-sitter/tree-sitter/releases/download/v${TREE_SITTER_VERSION}/tree-sitter-linux-${ts_arch}.gz" \
+  curl -fL "${CURL_RETRY[@]}" "https://github.com/tree-sitter/tree-sitter/releases/download/v${TREE_SITTER_VERSION}/tree-sitter-linux-${ts_arch}.gz" \
     -o "$tmp/tree-sitter.gz"
   gunzip "$tmp/tree-sitter.gz"
   mkdir -p "$HOME/.local/bin"
@@ -194,7 +197,7 @@ install_node() {
     *) echo "error: unsupported arch $ARCH for node install" >&2; exit 1 ;;
   esac
   local tmp; tmp=$(mktemp -d)
-  curl -fL "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${node_arch}.tar.gz" -o "$tmp/node.tar.gz"
+  curl -fL "${CURL_RETRY[@]}" "https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${node_arch}.tar.gz" -o "$tmp/node.tar.gz"
   rm -rf "$HOME/.local/node"
   mkdir -p "$HOME/.local/node"
   tar -xf "$tmp/node.tar.gz" -C "$HOME/.local/node" --strip-components=1
@@ -219,7 +222,7 @@ install_fzf() {
     *) echo "error: unsupported arch $ARCH for fzf install" >&2; exit 1 ;;
   esac
   local tmp; tmp=$(mktemp -d)
-  curl -fL "https://github.com/junegunn/fzf/releases/download/v${FZF_VERSION}/fzf-${FZF_VERSION}-linux_${fzf_arch}.tar.gz" \
+  curl -fL "${CURL_RETRY[@]}" "https://github.com/junegunn/fzf/releases/download/v${FZF_VERSION}/fzf-${FZF_VERSION}-linux_${fzf_arch}.tar.gz" \
     -o "$tmp/fzf.tar.gz"
   tar -xf "$tmp/fzf.tar.gz" -C "$tmp" fzf
   mkdir -p "$HOME/.local/bin"
@@ -267,12 +270,12 @@ install_ghostty() {
   # Release tag 1.3.1-0-ppa2 -> asset infix 1.3.1-0.ppa2
   local asset_ver="${GHOSTTY_DEB_RELEASE%-*}.${GHOSTTY_DEB_RELEASE##*-}"
   local url="https://github.com/mkasberg/ghostty-ubuntu/releases/download/${GHOSTTY_DEB_RELEASE}/ghostty_${asset_ver}_${deb_arch}_${ubu}.deb"
-  if ! curl -fsSL -o /dev/null -I "$url"; then
+  if ! curl -fsSL "${CURL_RETRY[@]}" -o /dev/null -I "$url"; then
     echo "no ghostty .deb for ${deb_arch}/${ubu} at $GHOSTTY_DEB_RELEASE; install manually: https://ghostty.org/download"
     return
   fi
   local tmp; tmp=$(mktemp -d)
-  curl -fL "$url" -o "$tmp/ghostty.deb"
+  curl -fL "${CURL_RETRY[@]}" "$url" -o "$tmp/ghostty.deb"
   maybe_sudo apt-get install -y "$tmp/ghostty.deb"
   rm -rf "$tmp"
   echo "installed $(ghostty --version | head -1)"

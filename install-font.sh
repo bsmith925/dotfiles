@@ -41,7 +41,8 @@ fi
 echo "installing $FONT_NAME ${VER:-latest}..."
 mkdir -p "$FONT_DIR"
 tmp=$(mktemp -d)
-curl -fL "$FONT_URL" -o "$tmp/$FONT_ARCHIVE"
+# Retry transient network errors on the download.
+curl -fL --retry 3 --retry-delay 2 --retry-connrefused "$FONT_URL" -o "$tmp/$FONT_ARCHIVE"
 tar -xf "$tmp/$FONT_ARCHIVE" -C "$FONT_DIR"
 rm -rf "$tmp"
 [ -n "$VER" ] && echo "$VER" > "$MARKER"
