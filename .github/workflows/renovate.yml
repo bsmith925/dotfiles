@@ -1,0 +1,35 @@
+name: renovate
+
+# Self-hosted Renovate: runs in this repo's Actions instead of the hosted app.
+# Reads config from renovate.json and opens grouped bump PRs for the pinned
+# tools in install.sh (plus GitHub Actions versions in these workflows).
+#
+# Requires a repo secret RENOVATE_TOKEN — a PAT with contents, pull-requests,
+# and workflows read/write on this repo. Using a PAT (rather than the built-in
+# GITHUB_TOKEN) lets Renovate's PRs trigger the ci workflow.
+
+on:
+  schedule:
+    - cron: "0 8 * * 1" # Mondays 08:00 UTC
+  workflow_dispatch: # allow manual runs from the Actions tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Self-hosted Renovate
+        uses: renovatebot/github-action@v46.1.18
+        with:
+          token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          LOG_LEVEL: info
