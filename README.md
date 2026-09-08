@@ -63,9 +63,11 @@ to disable the heavier LSPs.
 Config for [pi](https://github.com/earendil-works/pi) lives in `pi/.pi/agent`
 and links into `~/.pi/agent`. Tracked: `settings.json` (starts on the local
 `ninfer` provider), `models.json` (local provider registry), a global
-`AGENTS.md`, guardrail and workflow extensions (git-checkpoint, permission-gate,
-protected-paths, dirty-repo-guard, plan-mode, todo), and the subagent extension
-with its agents and workflow prompts. Runtime and secret files (`auth.json`,
+`AGENTS.md`, guardrail extensions (git-checkpoint, permission-gate,
+protected-paths, dirty-repo-guard), and the subagent extension with its agents
+and workflow prompts. Todo and plan mode come from npm extensions instead
+(`rpiv-todo` and Plannotator, installed by `install-pi.sh`). Runtime and secret
+files (`auth.json`,
 `sessions/`, `models-store.json`) are gitignored; the externally managed
 `mtplx-request-policy.ts` extension is left in place, not tracked.
 
@@ -77,9 +79,12 @@ Full setup, including the pi binary and the npm-published extensions:
 
 On Linux, `./install.sh` also links the pi config as part of the full install.
 `install-pi.sh` is the macOS entry point (the full installer is Linux-only) and
-installs `pi` plus `pi-vetter`, `pi-lens`, and `pi-web-access`. `pi-web-access`
-web search needs an API key; `pi-mcp-adapter` is intentionally left out until
-MCP servers are in use.
+installs `pi` plus its extensions: `pi-vetter`, `pi-lens`, `pi-web-access`,
+`rpiv-ask-user-question`, `rpiv-todo`, `pi-mcp-adapter`, and Plannotator
+(`@plannotator/pi-extension`). `pi-web-access` web search needs an API key;
+`pi-mcp-adapter` stays idle until an MCP server is configured; Plannotator opens
+a local browser UI for plan review and replaces the shipped `plan-mode` (removed
+to avoid a `--plan` flag conflict).
 
 ## Version management
 

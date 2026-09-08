@@ -49,6 +49,8 @@ PI_EXTENSIONS=(
   pi-web-access                        # web search, URL fetch, GitHub clone, PDF/YouTube extraction
   @juicesharp/rpiv-ask-user-question   # structured questions instead of guessing
   @juicesharp/rpiv-todo                # persistent todo overlay (survives compaction)
+  pi-mcp-adapter                       # one proxy tool to any MCP server (ready for future servers)
+  @plannotator/pi-extension            # plan review with a local browser UI (annotate/approve)
 )
 for pkg in "${PI_EXTENSIONS[@]}"; do
   echo "pi install npm:$pkg"
@@ -58,5 +60,5 @@ done
 echo ""
 echo "pi setup complete. Config is linked from $DOTFILES/pi into ~/.pi/agent."
 echo "note: pi-web-access web search needs an API key — set one per its README."
-echo "      pi-mcp-adapter (npm:pi-mcp-adapter) is intentionally not installed;"
-echo "      add it if you start using MCP servers."
+echo "      pi-mcp-adapter is installed but idle until you configure an MCP server."
+echo "      plannotator opens a local browser UI for plan review (no account needed)."
