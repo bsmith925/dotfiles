@@ -10,7 +10,7 @@ fail() { echo "  ✗ $1" >&2; (( FAIL++ )) || true; }
 
 # ── syntax ──────────────────────────────────────────────────────────────────
 echo "syntax"
-for f in install.sh install-lean.sh install-font.sh shell/.aliases shell/.bashrc_extra shell/.zshrc_extra; do
+for f in install.sh install-lean.sh install-font.sh install-pi.sh shell/.aliases shell/.bashrc_extra shell/.zshrc_extra; do
   bash -n "$DOTFILES/$f" \
     && pass "$f" \
     || fail "$f has syntax errors"
@@ -33,6 +33,7 @@ check_link "$HOME/.config/nvim/init.lua"      "dotfiles/nvim"
 check_link "$HOME/.config/tmux/tmux.conf"     "dotfiles/tmux"
 check_link "$HOME/.aliases"                   "dotfiles/shell"
 check_link "$HOME/.bashrc_extra"              "dotfiles/shell"
+check_link "$HOME/.pi/agent/settings.json"    "dotfiles/pi"
 
 # ── tmux ─────────────────────────────────────────────────────────────────────
 echo "tmux"

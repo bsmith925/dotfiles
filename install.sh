@@ -283,7 +283,7 @@ install_ghostty() {
 
 link_packages() {
   local pkg src dst
-  for pkg in nvim tmux ghostty shell; do
+  for pkg in nvim tmux ghostty shell pi; do
     echo "linking $pkg..."
     while IFS= read -r src; do
       dst="$HOME/${src#"$DOTFILES/$pkg/"}"
