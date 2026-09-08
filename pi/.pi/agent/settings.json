@@ -6,5 +6,10 @@
   "autocompleteMaxVisible": 3,
   "defaultProvider": "ninfer",
   "defaultModel": "qwen3.8-27b",
-  "externalEditor": "code --wait"
+  "externalEditor": "code --wait",
+  "packages": [
+    "npm:pi-vetter",
+    "npm:pi-lens",
+    "npm:pi-web-access"
+  ]
 }
