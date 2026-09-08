@@ -1,0 +1,10 @@
+{
+  "lastChangelogVersion": "0.84.4",
+  "theme": "dark",
+  "editorPaddingX": 1,
+  "outputPad": 1,
+  "autocompleteMaxVisible": 3,
+  "defaultProvider": "ninfer",
+  "defaultModel": "qwen3.8-27b",
+  "externalEditor": "code --wait"
+}

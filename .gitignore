@@ -1,0 +1,12 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+
+# pi runtime & secrets — never track these, even under pi/
+pi/.pi/agent/auth.json
+pi/.pi/agent/models-store.json
+pi/.pi/agent/sessions/
+pi/.pi/agent/**/*.bak
+pi/.pi/agent/**/*.bak-*

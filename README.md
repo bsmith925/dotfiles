@@ -3,7 +3,7 @@
 Personal development environment: Neovim (LazyVim), tmux, the ghostty terminal,
 and shell config, plus a one-shot installer that provisions the tools they
 depend on. Targets Debian/Ubuntu-based Linux (developed on Linux Mint); the font
-installer also supports macOS.
+and pi installers also support macOS.
 
 ## Layout
 
@@ -13,9 +13,11 @@ installer also supports macOS.
 | `tmux/`           | tmux config -> `~/.config/tmux`                            |
 | `ghostty/`        | ghostty terminal config -> `~/.config/ghostty`            |
 | `shell/`          | `.aliases`, `.bashrc_extra`, `.zshrc_extra` -> `~`         |
+| `pi/`             | pi coding agent config -> `~/.pi/agent`                    |
 | `install.sh`      | Full install: tools + symlinks + shell wiring             |
 | `install-lean.sh` | Lean profile for constrained machines (VPS, containers)   |
 | `install-font.sh` | Standalone JetBrainsMono Nerd Font installer (Linux/macOS) |
+| `install-pi.sh`   | Standalone pi coding agent setup (Linux/macOS)             |
 | `test.sh`         | Smoke tests run after an install                           |
 | `renovate.json`   | Automated version-bump PRs for pinned tools               |
 
@@ -55,6 +57,29 @@ For a VPS, shared box, or container where the full toolchain is unwanted:
 
 This installs only Neovim, tmux, and the shell config, and writes `~/.nvim_lean`
 to disable the heavier LSPs.
+
+## pi coding agent
+
+Config for [pi](https://github.com/earendil-works/pi) lives in `pi/.pi/agent`
+and links into `~/.pi/agent`. Tracked: `settings.json` (starts on the local
+`ninfer` provider), `models.json` (local provider registry), a global
+`AGENTS.md`, guardrail and workflow extensions (git-checkpoint, permission-gate,
+protected-paths, dirty-repo-guard, plan-mode, todo), and the subagent extension
+with its agents and workflow prompts. Runtime and secret files (`auth.json`,
+`sessions/`, `models-store.json`) are gitignored; the externally managed
+`mtplx-request-policy.ts` extension is left in place, not tracked.
+
+Full setup, including the pi binary and the npm-published extensions:
+
+```sh
+./install-pi.sh
+```
+
+On Linux, `./install.sh` also links the pi config as part of the full install.
+`install-pi.sh` is the macOS entry point (the full installer is Linux-only) and
+installs `pi` plus `pi-vetter`, `pi-lens`, and `pi-web-access`. `pi-web-access`
+web search needs an API key; `pi-mcp-adapter` is intentionally left out until
+MCP servers are in use.
 
 ## Version management
 

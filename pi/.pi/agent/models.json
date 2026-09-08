@@ -1,0 +1,115 @@
+{
+  "providers": {
+    "mlx": {
+      "baseUrl": "http://127.0.0.1:8081/v1",
+      "api": "openai-completions",
+      "apiKey": "local",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "maxTokensField": "max_tokens",
+        "thinkingFormat": "qwen-chat-template"
+      },
+      "models": [
+        {
+          "id": "mlx-community/Qwen3.6-35B-A3B-4bit-DWQ",
+          "name": "Qwen3.6 35B MoE (mlx)",
+          "reasoning": true,
+          "contextWindow": 65536,
+          "maxTokens": 32768,
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 0.95,
+            "top_k": 20,
+            "repetition_penalty": 1.05
+          }
+        },
+        {
+          "id": "mlx-community/Qwen3.6-35B-A3B-OptiQ-4bit",
+          "name": "Qwen3.6 35B MoE (mlx)",
+          "reasoning": true,
+          "contextWindow": 65536,
+          "maxTokens": 32768,
+          "samplingParams": {
+            "temperature": 1.0,
+            "top_p": 0.95,
+            "top_k": 20,
+            "repetition_penalty": 1.05
+          }
+        }
+      ]
+    },
+    "mtplx": {
+      "baseUrl": "http://127.0.0.1:8000/v1",
+      "api": "openai-completions",
+      "apiKey": "mtplx-local",
+      "authHeader": true,
+      "headers": {
+        "x-mtplx-client": "pi"
+      },
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": true,
+        "thinkingFormat": "qwen",
+        "maxTokensField": "max_tokens"
+      },
+      "models": [
+        {
+          "id": "mtplx-qwen38-27b-optimized-speed",
+          "name": "MTPLX mtplx-qwen38-27b-optimized-speed",
+          "reasoning": true,
+          "thinkingLevelMap": {
+            "minimal": null,
+            "xhigh": "xhigh"
+          },
+          "input": [
+            "text",
+            "image"
+          ],
+          "contextWindow": 65536,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "maxTokens": 65536
+        }
+      ]
+    },
+    "ninfer": {
+      "baseUrl": "http://192.168.1.184:8080/v1",
+      "api": "openai-completions",
+      "apiKey": "local",
+      "compat": {
+        "supportsDeveloperRole": false,
+        "supportsReasoningEffort": false,
+        "thinkingFormat": "qwen",
+        "maxTokensField": "max_tokens"
+      },
+      "models": [
+        {
+          "id": "qwen3.8-27b",
+          "name": "Qwen3.8 27B (ninfer)",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "contextWindow": 240000,
+          "maxTokens": 32768,
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "samplingParams": {
+            "temperature": 0.6,
+            "top_p": 0.95,
+            "top_k": 20
+          }
+        }
+      ]
+    }
+  }
+}
