@@ -44,9 +44,11 @@ fi
 # Non-fatal: a failure here (offline, registry hiccup) leaves the linked config
 # intact, and each is safe to re-run.
 PI_EXTENSIONS=(
-  pi-vetter      # supply-chain vetting before install (OSV, sigstore, patterns)
-  pi-lens        # real-time lint / type-check / format feedback (ruff, etc.)
-  pi-web-access  # web search, URL fetch, GitHub clone, PDF/YouTube extraction
+  pi-vetter                            # supply-chain vetting first (OSV, sigstore, patterns)
+  pi-lens                              # real-time lint / type-check / format feedback (ruff, etc.)
+  pi-web-access                        # web search, URL fetch, GitHub clone, PDF/YouTube extraction
+  @juicesharp/rpiv-ask-user-question   # structured questions instead of guessing
+  @juicesharp/rpiv-todo                # persistent todo overlay (survives compaction)
 )
 for pkg in "${PI_EXTENSIONS[@]}"; do
   echo "pi install npm:$pkg"
