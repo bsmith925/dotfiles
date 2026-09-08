@@ -12,6 +12,8 @@
     "npm:pi-lens",
     "npm:pi-web-access",
     "npm:@juicesharp/rpiv-ask-user-question",
-    "npm:@juicesharp/rpiv-todo"
+    "npm:@juicesharp/rpiv-todo",
+    "npm:pi-mcp-adapter",
+    "npm:@plannotator/pi-extension"
   ]
 }
