@@ -50,6 +50,32 @@ jobs:
       - name: test
         run: bash test.sh
 
+  # ── macOS ────────────────────────────────────────────────────────────────
+  # Apple Silicon (work laptop) and Intel (older laptop); installs via Homebrew.
+  macos:
+    name: macos-latest (arm64)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install
+        run: ./install.sh
+
+      - name: test
+        run: bash test.sh
+
+  macos-intel:
+    name: macos-15-intel (x86_64)
+    runs-on: macos-15-intel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install
+        run: ./install.sh
+
+      - name: test
+        run: bash test.sh
+
   # ── Ubuntu ARM64 ─────────────────────────────────────────────────────────
   ubuntu-arm:
     name: ubuntu-24.04 (arm64)
