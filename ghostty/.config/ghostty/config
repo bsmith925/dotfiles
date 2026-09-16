@@ -13,5 +13,9 @@ copy-on-select = clipboard
 clipboard-trim-trailing-spaces = true
 shell-integration = detect
 
+# macOS: left Option sends Alt (for tmux M-h / M-l); right Option still types
+# special characters. Ignored on Linux.
+macos-option-as-alt = left
+
 # undercurl support (neovim diagnostics/spell)
 term = xterm-ghostty

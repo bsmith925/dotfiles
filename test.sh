@@ -38,8 +38,10 @@ check_link "$HOME/.pi/agent/settings.json"    "dotfiles/pi"
 # ── tmux ─────────────────────────────────────────────────────────────────────
 echo "tmux"
 if command -v tmux &>/dev/null; then
-  if tmux -f "$DOTFILES/tmux/.config/tmux/tmux.conf" new-session -d -s _dotfiles_test 2>/dev/null; then
-    tmux kill-session -t _dotfiles_test 2>/dev/null || true
+  # Private server (-L): a live tmux would ignore -f, and continuum must not
+  # restore saved sessions into this one before it's killed.
+  if tmux -L _dotfiles_test -f "$DOTFILES/tmux/.config/tmux/tmux.conf" new-session -d 2>/dev/null; then
+    tmux -L _dotfiles_test kill-server 2>/dev/null || true
     pass "tmux config parses"
   else
     fail "tmux config failed to parse"
@@ -47,6 +49,14 @@ if command -v tmux &>/dev/null; then
 else
   fail "tmux not found"
 fi
+[ ! -e "$HOME/.tmux.conf" ] \
+  && pass "no ~/.tmux.conf shadowing it" \
+  || fail "~/.tmux.conf shadows ~/.config/tmux/tmux.conf — move it aside"
+for plugin in tpm tmux-resurrect tmux-continuum; do
+  [ -d "$HOME/.config/tmux/plugins/$plugin" ] \
+    && pass "tmux plugin $plugin installed" \
+    || fail "tmux plugin $plugin missing (re-run the installer)"
+done
 
 # ── nvim ─────────────────────────────────────────────────────────────────────
 echo "nvim"
@@ -86,7 +96,8 @@ check_runs "tree-sitter" tree-sitter --version
 check_runs "node"        node --version
 check_runs "fzf"         fzf --version
 check_runs "rg"          rg --version
-check_runs "fdfind"      fdfind --version
+check_runs "fdfind"      fdfind --version   # Debian/Ubuntu name
+check_runs "fd"          fd --version       # Homebrew name
 check_runs "ghostty"     ghostty --version
 
 # ── summary ──────────────────────────────────────────────────────────────────

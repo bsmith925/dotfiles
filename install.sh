@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 # Full install: nvim + tmux + shell + Rust + Go + Node + gh + lazygit + tree-sitter
 #               + fzf + NerdFont + ghostty (terminal + config)
+# Linux (Debian/Ubuntu): apt + pinned release binaries. macOS: Homebrew (Brewfile).
 set -euo pipefail
 
-# Linux only — macOS support not wired yet
-if [[ "$(uname -s)" != "Linux" ]]; then
-  echo "error: this script only supports Linux (detected: $(uname -s))" >&2
-  exit 1
-fi
+OS="$(uname -s)"     # Linux or Darwin — every OS-specific branch keys off this
+case "$OS" in
+  Linux|Darwin) ;;
+  *) echo "error: unsupported OS $OS (Linux and macOS only)" >&2; exit 1 ;;
+esac
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ARCH="$(uname -m)"   # x86_64 or aarch64
+ARCH="$(uname -m)"   # x86_64 or aarch64 (only the Linux installers use it)
 
 # Retry transient network errors on downloads (flaky HTTP/2, refused conns).
 CURL_RETRY=(--retry 3 --retry-delay 2 --retry-connrefused)
@@ -20,6 +21,7 @@ CURL_RETRY=(--retry 3 --retry-delay 2 --retry-connrefused)
 # ./install.sh — the version-aware guards below will replace the old binary.
 # Renovate opens bump PRs automatically (see renovate.json); the `# renovate:`
 # comment on the line ABOVE each pin maps it to its upstream source — keep them.
+# These pins are Linux-only; macOS takes current Homebrew versions (Brewfile).
 #
 # renovate: datasource=github-releases depName=neovim/neovim
 NVIM_VERSION=0.12.4
@@ -42,6 +44,22 @@ GHOSTTY_DEB_RELEASE=1.3.1-0-ppa2
 
 # Run with sudo when not root (containers run as root; desktops don't)
 maybe_sudo() { [ "$(id -u)" -eq 0 ] && "$@" || sudo "$@"; }
+
+install_brew_packages() {
+  # macOS: CLI tools + Nerd Font from the Brewfile. --no-upgrade installs only
+  # what's missing; upgrading stays a deliberate `brew upgrade`.
+  local b
+  if ! command -v brew &>/dev/null; then
+    for b in /opt/homebrew/bin/brew /usr/local/bin/brew; do   # Apple Silicon, Intel
+      if [ -x "$b" ]; then eval "$("$b" shellenv)"; break; fi
+    done
+  fi
+  if ! command -v brew &>/dev/null; then
+    echo "error: Homebrew is required on macOS — install it from https://brew.sh, then re-run" >&2
+    exit 1
+  fi
+  brew bundle install --no-upgrade --file="$DOTFILES/Brewfile"
+}
 
 install_packages() {
   maybe_sudo apt-get update -qq
@@ -240,6 +258,17 @@ install_nerdfont() {
 install_ghostty() {
   # GNOME Terminal (Mint's default) can't render Nerd Fonts without huge
   # inter-glyph gaps, so we install ghostty — its config is linked below.
+  if [ "$OS" = Darwin ]; then
+    if brew list --cask ghostty &>/dev/null || [ -d /Applications/Ghostty.app ] \
+       || [ -d "$HOME/Applications/Ghostty.app" ]; then
+      echo "ghostty already installed"; return
+    fi
+    echo "installing ghostty..."
+    # Non-fatal, like the Linux path: a managed Mac may block app installs.
+    brew install --cask ghostty \
+      || echo "WARNING: ghostty install failed; install manually: https://ghostty.org/download" >&2
+    return
+  fi
   local want="${GHOSTTY_DEB_RELEASE%%-*}"   # upstream ghostty version, e.g. 1.3.1
   local have; have=$(ghostty --version 2>/dev/null | head -1 | grep -oP '[0-9]+\.[0-9]+\.[0-9]+' || true)
   if [ "$have" = "$want" ]; then
@@ -288,8 +317,36 @@ link_packages() {
     while IFS= read -r src; do
       dst="$HOME/${src#"$DOTFILES/$pkg/"}"
       mkdir -p "$(dirname "$dst")"
+      # A real file here is a machine's own config — keep a copy, don't clobber it.
+      if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+        mv "$dst" "$dst.bak.$(date +%Y%m%d%H%M%S)"
+        echo "  backed up existing $dst"
+      fi
       ln -sfn "$src" "$dst"
     done < <(find "$DOTFILES/$pkg" -type f)
+  done
+  # tmux reads ~/.tmux.conf before ~/.config/tmux/tmux.conf, so a leftover one
+  # silently shadows the linked config.
+  if [ -e "$HOME/.tmux.conf" ] || [ -L "$HOME/.tmux.conf" ]; then
+    mv "$HOME/.tmux.conf" "$HOME/.tmux.conf.bak.$(date +%Y%m%d%H%M%S)"
+    echo "  moved aside ~/.tmux.conf (it would shadow ~/.config/tmux/tmux.conf)"
+  fi
+}
+
+install_tmux_plugins() {
+  # Clone TPM and every `@plugin` in tmux.conf (resurrect, continuum) into TPM's
+  # plugin dir. Plain git rather than TPM's installer, which needs a tmux server.
+  # Later: prefix + U updates them, prefix + I picks up newly added ones.
+  local dir="$HOME/.config/tmux/plugins" plugin name
+  mkdir -p "$dir"
+  for plugin in $(sed -n "s/^set -g @plugin '\([^']*\)'.*/\1/p" "$DOTFILES/tmux/.config/tmux/tmux.conf"); do
+    name="${plugin##*/}"
+    if [ -d "$dir/$name" ]; then
+      echo "tmux plugin $name already installed"
+    else
+      echo "installing tmux plugin $name..."
+      git clone --quiet "https://github.com/$plugin" "$dir/$name"
+    fi
   done
 }
 
@@ -299,23 +356,32 @@ wire_shell() {
     echo '[ -f ~/.bashrc_extra ] && source ~/.bashrc_extra' >> "$bashrc"
   fi
   local zshrc="$HOME/.zshrc"
+  # zsh is macOS's default shell, but a fresh Mac has no ~/.zshrc to hook into.
+  if [ "$OS" = Darwin ] && [ ! -e "$zshrc" ]; then
+    case "${SHELL:-}" in */zsh) touch "$zshrc" ;; esac
+  fi
   if [ -f "$zshrc" ] && ! grep -q "zshrc_extra" "$zshrc"; then
     echo '[ -f ~/.zshrc_extra ] && source ~/.zshrc_extra' >> "$zshrc"
   fi
 }
 
-install_packages
-install_nvim
+if [ "$OS" = Darwin ]; then
+  install_brew_packages   # nvim, tmux, rg, fd, go, gh, lazygit, tree-sitter, node, fzf, font
+else
+  install_packages
+  install_nvim
+  install_go
+  install_gh
+  install_lazygit
+  install_treesitter
+  install_node
+  install_fzf
+  install_nerdfont
+fi
 install_rust
-install_go
-install_gh
-install_lazygit
-install_treesitter
-install_node
-install_fzf
-install_nerdfont
 install_ghostty
 link_packages
+install_tmux_plugins
 wire_shell
 
 echo ""

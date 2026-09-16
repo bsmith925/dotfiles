@@ -4,7 +4,7 @@
 set -euo pipefail
 
 if [[ "$(uname -s)" != "Linux" ]]; then
-  echo "error: this script only supports Linux (detected: $(uname -s))" >&2
+  echo "error: the lean profile is Linux-only (detected: $(uname -s)); on macOS use ./install.sh" >&2
   exit 1
 fi
 
@@ -44,8 +44,35 @@ link_packages() {
     while IFS= read -r src; do
       dst="$HOME/${src#"$DOTFILES/$pkg/"}"
       mkdir -p "$(dirname "$dst")"
+      # A real file here is a machine's own config — keep a copy, don't clobber it.
+      if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+        mv "$dst" "$dst.bak.$(date +%Y%m%d%H%M%S)"
+        echo "  backed up existing $dst"
+      fi
       ln -sfn "$src" "$dst"
     done < <(find "$DOTFILES/$pkg" -type f)
+  done
+  # tmux reads ~/.tmux.conf before ~/.config/tmux/tmux.conf, so a leftover one
+  # silently shadows the linked config.
+  if [ -e "$HOME/.tmux.conf" ] || [ -L "$HOME/.tmux.conf" ]; then
+    mv "$HOME/.tmux.conf" "$HOME/.tmux.conf.bak.$(date +%Y%m%d%H%M%S)"
+    echo "  moved aside ~/.tmux.conf (it would shadow ~/.config/tmux/tmux.conf)"
+  fi
+}
+
+install_tmux_plugins() {
+  # Clone TPM and every `@plugin` in tmux.conf (resurrect, continuum) into TPM's
+  # plugin dir. Plain git rather than TPM's installer, which needs a tmux server.
+  local dir="$HOME/.config/tmux/plugins" plugin name
+  mkdir -p "$dir"
+  for plugin in $(sed -n "s/^set -g @plugin '\([^']*\)'.*/\1/p" "$DOTFILES/tmux/.config/tmux/tmux.conf"); do
+    name="${plugin##*/}"
+    if [ -d "$dir/$name" ]; then
+      echo "tmux plugin $name already installed"
+    else
+      echo "installing tmux plugin $name..."
+      git clone --quiet "https://github.com/$plugin" "$dir/$name"
+    fi
   done
 }
 
@@ -63,6 +90,7 @@ wire_shell() {
 install_packages
 install_nvim
 link_packages
+install_tmux_plugins
 wire_shell
 
 touch "$HOME/.nvim_lean"

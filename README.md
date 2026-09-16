@@ -2,8 +2,8 @@
 
 Personal development environment: Neovim (LazyVim), tmux, the ghostty terminal,
 and shell config, plus a one-shot installer that provisions the tools they
-depend on. Targets Debian/Ubuntu-based Linux (developed on Linux Mint); the font
-and pi installers also support macOS.
+depend on. Runs on Debian/Ubuntu-based Linux (developed on Linux Mint) and macOS
+(Apple Silicon and Intel).
 
 ## Layout
 
@@ -16,13 +16,15 @@ and pi installers also support macOS.
 | `pi/`             | pi coding agent config -> `~/.pi/agent`                    |
 | `install.sh`      | Full install: tools + symlinks + shell wiring             |
 | `install-lean.sh` | Lean profile for constrained machines (VPS, containers)   |
+| `Brewfile`        | macOS packages `install.sh` installs via Homebrew          |
 | `install-font.sh` | Standalone JetBrainsMono Nerd Font installer (Linux/macOS) |
 | `install-pi.sh`   | Standalone pi coding agent setup (Linux/macOS)             |
 | `test.sh`         | Smoke tests run after an install                           |
 | `renovate.json`   | Automated version-bump PRs for pinned tools               |
 
 Configs are applied as symlinks back into this repo, so edits to a linked file
-are edits to the repo.
+are edits to the repo. A real file already at a link target (a machine's own
+config) is renamed to `<name>.bak.<timestamp>` rather than overwritten.
 
 ## Install
 
@@ -34,9 +36,14 @@ cd ~/dotfiles
 
 The full installer sets up: Neovim, tmux, ripgrep, fd, Rust (rustup), Go, Node
 LTS, gh (GitHub CLI), lazygit, the tree-sitter CLI, fzf, the JetBrainsMono Nerd
-Font, and the ghostty terminal. Language toolchains and CLIs install under
-`~/.local` (no sudo); apt packages and ghostty use sudo. Every step is
-idempotent and version-aware, so re-running only changes what is out of date.
+Font, the ghostty terminal, and the tmux plugins. Every step is idempotent, so
+re-running only changes what is missing or out of date.
+
+- **Linux:** apt packages plus pinned release binaries. Language toolchains and
+  CLIs install under `~/.local` (no sudo); apt packages and ghostty use sudo.
+- **macOS:** needs [Homebrew](https://brew.sh) first. Tools and the font come
+  from the `Brewfile` and ghostty from its cask. Existing packages are never
+  upgraded; run `brew upgrade` for that.
 
 When it finishes:
 
@@ -46,6 +53,34 @@ tmux new -A -s dev      # in a new shell
 ```
 
 The first Neovim launch installs plugins automatically.
+
+## Linux vs macOS
+
+Everything keys off `uname -s` (`Linux` / `Darwin`); shell files use the
+equivalent built-in `$OSTYPE`. The differences:
+
+| Where                  | Linux                                  | macOS                                      |
+| ---------------------- | -------------------------------------- | ------------------------------------------ |
+| `install.sh`           | apt + pinned binaries                  | `Brewfile` + ghostty cask                  |
+| `install-lean.sh`      | supported                              | not supported (use `install.sh`)           |
+| `tmux.conf` clipboard  | `xclip` / `xsel`                       | `pbcopy`                                   |
+| `.bashrc_extra` / `.zshrc_extra` | —                            | loads Homebrew (`/opt/homebrew` or `/usr/local`) if it isn't on `PATH` |
+| `.aliases`             | `fd` -> `fdfind`                       | `fd` is already `fd`                       |
+| ghostty                | —                                      | left Option acts as Alt (tmux `M-h`/`M-l`) |
+
+## tmux sessions across reboots
+
+[tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) and
+[tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) are installed
+(via [TPM](https://github.com/tmux-plugins/tpm), into `~/.config/tmux/plugins`)
+by both installers. Sessions, windows, pane layouts, working directories, and
+pane contents are saved every 15 minutes and restored when the tmux server next
+starts, e.g. the first `tmux new -A -s dev` after a reboot. Manual save/restore:
+`prefix + C-s` / `prefix + C-r`. Only a short list of programs (vim/nvim, less,
+man, top, ...) is relaunched in restored panes.
+
+tmux reads `~/.tmux.conf` in preference to `~/.config/tmux/tmux.conf`, so the
+installers move an existing `~/.tmux.conf` aside.
 
 ### Lean profile
 
@@ -77,9 +112,8 @@ Full setup, including the pi binary and the npm-published extensions:
 ./install-pi.sh
 ```
 
-On Linux, `./install.sh` also links the pi config as part of the full install.
-`install-pi.sh` is the macOS entry point (the full installer is Linux-only) and
-installs `pi` plus its extensions: `pi-vetter`, `pi-lens`, `pi-web-access`,
+`./install.sh` also links the pi config as part of the full install (Linux and
+macOS); `install-pi.sh` additionally installs `pi` plus its extensions: `pi-vetter`, `pi-lens`, `pi-web-access`,
 `rpiv-ask-user-question`, `rpiv-todo`, `pi-mcp-adapter`, and Plannotator
 (`@plannotator/pi-extension`). `pi-web-access` web search needs an API key;
 `pi-mcp-adapter` stays idle until an MCP server is configured; Plannotator opens
@@ -96,6 +130,9 @@ to avoid a `--plan` flag conflict).
 - **Neovim plugins** are pinned in `nvim/.config/nvim/lazy-lock.json`. Update
   with `:Lazy update` inside Neovim, then commit the changed lock file.
 - **Rust** is managed by rustup; run `rustup update` to bump it.
+- **macOS tools** aren't pinned: Homebrew ships current releases, so the pins
+  and Renovate cover Linux only. Upgrade with `brew upgrade`.
+- **tmux plugins** track their default branches; `prefix + U` updates them.
 
 ## Testing
 
@@ -104,9 +141,12 @@ to avoid a `--plan` flag conflict).
 ```
 
 Checks script syntax, that the expected symlinks resolve into this repo, that
-the tmux and Neovim configs load, and that each installed tool actually runs.
+the tmux and Neovim configs load (tmux on a private server, so a running tmux
+isn't touched), that the tmux plugins are installed and not shadowed by a
+`~/.tmux.conf`, and that each installed tool actually runs.
 A tool that is legitimately absent (lean profile, or unsupported system) is
 skipped rather than failed.
 
 CI (`.github/workflows/ci.yml`) runs the full install plus `test.sh` on
-Ubuntu x86_64, Ubuntu arm64, and Debian Bookworm on every push and pull request.
+Ubuntu x86_64, Ubuntu arm64, Debian Bookworm, macOS arm64, and macOS x86_64 on
+every push and pull request.

@@ -20,4 +20,6 @@ alias vi="nvim"
 
 # tools
 alias rg="rg --smart-case"
-alias fd="fdfind"               # Debian names it fdfind
+if command -v fdfind >/dev/null 2>&1; then
+  alias fd="fdfind"             # Debian/Ubuntu name it fdfind; Homebrew keeps fd
+fi

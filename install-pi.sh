@@ -5,9 +5,9 @@
 #   2. install the pi binary (needs Node/npm)
 #   3. install the pi extensions that config alone can't provide
 #
-# install.sh also links the pi config on Linux (via link_packages); this script
-# is the macOS entry point (install.sh is Linux-only) and additionally installs
-# the binary and npm-published extensions. Every step is idempotent.
+# install.sh also links the pi config (via link_packages); this script
+# additionally installs the binary and npm-published extensions. Every step is
+# idempotent.
 set -euo pipefail
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -22,14 +22,19 @@ if [ -d "$DOTFILES/pi" ]; then
   while IFS= read -r src; do
     dst="$HOME/${src#"$DOTFILES/pi/"}"
     mkdir -p "$(dirname "$dst")"
+    # A real file here is a machine's own config — keep a copy, don't clobber it.
+    if [ -e "$dst" ] && [ ! -L "$dst" ]; then
+      mv "$dst" "$dst.bak.$(date +%Y%m%d%H%M%S)"
+      echo "  backed up existing $dst"
+    fi
     ln -sfn "$src" "$dst"
   done < <(find "$DOTFILES/pi" -type f)
 fi
 
 # ── 2. install the pi binary ─────────────────────────────────────────────────
 if ! command -v npm >/dev/null 2>&1; then
-  echo "error: npm not found. Install Node first (macOS: brew install node;" >&2
-  echo "       Linux: run ./install.sh, which sets up Node LTS)." >&2
+  echo "error: npm not found. Run ./install.sh first, which sets up Node" >&2
+  echo "       (Linux: pinned LTS; macOS: Homebrew)." >&2
   exit 1
 fi
 if command -v pi >/dev/null 2>&1; then
