@@ -2,8 +2,8 @@
 
 Personal development environment: Neovim (LazyVim), tmux, the ghostty terminal,
 and shell config, plus a one-shot installer that provisions the tools they
-depend on. Runs on Debian/Ubuntu-based Linux (developed on Linux Mint) and macOS
-(Apple Silicon and Intel).
+depend on. Runs on Debian/Ubuntu-based Linux (developed on Linux Mint), Arch Linux, and
+macOS (Apple Silicon and Intel).
 
 ## Layout
 
@@ -39,8 +39,9 @@ LTS, gh (GitHub CLI), lazygit, the tree-sitter CLI, fzf, the JetBrainsMono Nerd
 Font, the ghostty terminal, and the tmux plugins. Every step is idempotent, so
 re-running only changes what is missing or out of date.
 
-- **Linux:** apt packages plus pinned release binaries. Language toolchains and
-  CLIs install under `~/.local` (no sudo); apt packages and ghostty use sudo.
+- **Linux:** apt (Debian/Ubuntu) or pacman (Arch) packages plus pinned release
+  binaries. Language toolchains and CLIs install under `~/.local` (no sudo);
+  system packages and ghostty use sudo.
 - **macOS:** needs [Homebrew](https://brew.sh) first. Tools and the font come
   from the `Brewfile` and ghostty from its cask. Existing packages are never
   upgraded; run `brew upgrade` for that.
@@ -61,7 +62,7 @@ equivalent built-in `$OSTYPE`. The differences:
 
 | Where                  | Linux                                  | macOS                                      |
 | ---------------------- | -------------------------------------- | ------------------------------------------ |
-| `install.sh`           | apt + pinned binaries                  | `Brewfile` + ghostty cask                  |
+| `install.sh`           | apt/pacman + pinned binaries           | `Brewfile` + ghostty cask                  |
 | `install-lean.sh`      | supported                              | not supported (use `install.sh`)           |
 | `tmux.conf` clipboard  | `xclip` / `xsel`                       | `pbcopy`                                   |
 | `.bashrc_extra` / `.zshrc_extra` | —                            | loads Homebrew (`/opt/homebrew` or `/usr/local`) if it isn't on `PATH` |
@@ -171,5 +172,5 @@ A tool that is legitimately absent (lean profile, or unsupported system) is
 skipped rather than failed.
 
 CI (`.github/workflows/ci.yml`) runs the full install plus `test.sh` on
-Ubuntu x86_64, Ubuntu arm64, Debian Bookworm, macOS arm64, and macOS x86_64 on
-every push and pull request.
+Ubuntu x86_64, Ubuntu arm64, Debian Bookworm, Arch, macOS arm64, and macOS
+x86_64 on every push and pull request.
