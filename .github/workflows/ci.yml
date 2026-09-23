@@ -50,6 +50,25 @@ jobs:
       - name: test
         run: bash test.sh
 
+  # ── Arch x86_64 ──────────────────────────────────────────────────────────
+  # Rolling distro — this job may need occasional attention when Arch bumps a
+  # package. archlinux/base is minimal (no git/curl): checkout falls back to a
+  # tarball download, and install.sh installs git via pacman before the tmux
+  # plugin clones need it (same pattern as the debian job).
+  arch:
+    name: arch (x86_64)
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:base
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: install
+        run: ./install.sh
+
+      - name: test
+        run: bash test.sh
+
   # ── macOS ────────────────────────────────────────────────────────────────
   # Apple Silicon (work laptop) and Intel (older laptop); installs via Homebrew.
   macos:

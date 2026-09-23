@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Full install: nvim + tmux + shell + Rust + Go + Node + gh + lazygit + tree-sitter
 #               + fzf + NerdFont + ghostty (terminal + config)
-# Linux (Debian/Ubuntu): apt + pinned release binaries. macOS: Homebrew (Brewfile).
+# Linux (Debian/Ubuntu via apt, Arch via pacman) + pinned release binaries. macOS: Homebrew (Brewfile).
 set -euo pipefail
 
 OS="$(uname -s)"     # Linux or Darwin — every OS-specific branch keys off this
@@ -12,6 +12,13 @@ esac
 
 DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ARCH="$(uname -m)"   # x86_64 or aarch64 (only the Linux installers use it)
+
+# Distro id for the Linux package-manager branch (Debian/Ubuntu apt vs Arch pacman).
+DISTRO=""
+if [ "$OS" = Linux ] && [ -r /etc/os-release ]; then
+  . /etc/os-release
+  DISTRO="${ID:-}"
+fi
 
 # Retry transient network errors on downloads (flaky HTTP/2, refused conns).
 CURL_RETRY=(--retry 3 --retry-delay 2 --retry-connrefused)
@@ -62,6 +69,15 @@ install_brew_packages() {
 }
 
 install_packages() {
+  if [ "$DISTRO" = "arch" ]; then
+    # Arch: pacman. The Arch package is `fd` (not Debian's `fd-find`). git+curl
+    # are installed here, before install.sh's later `git clone` (tmux plugins)
+    # needs them — the CI container has no git preinstalled (tarball checkout).
+    maybe_sudo pacman -Sy --noconfirm \
+      git curl unzip tmux ripgrep fd \
+      base-devel xclip fontconfig
+    return
+  fi
   maybe_sudo apt-get update -qq
   maybe_sudo apt-get install -y \
     git curl unzip tmux ripgrep fd-find \
@@ -266,6 +282,17 @@ install_ghostty() {
     echo "installing ghostty..."
     # Non-fatal, like the Linux path: a managed Mac may block app installs.
     brew install --cask ghostty \
+      || echo "WARNING: ghostty install failed; install manually: https://ghostty.org/download" >&2
+    return
+  fi
+  # Arch: pacman (best-effort, like the macOS path). Arch tracks its own
+  # ghostty version, so no pin — just a presence check.
+  if [ "$DISTRO" = "arch" ]; then
+    if ghostty --version &>/dev/null; then
+      echo "ghostty already installed"; return
+    fi
+    echo "installing ghostty..."
+    maybe_sudo pacman -S --noconfirm ghostty \
       || echo "WARNING: ghostty install failed; install manually: https://ghostty.org/download" >&2
     return
   fi
