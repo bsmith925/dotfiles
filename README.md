@@ -120,6 +120,29 @@ macOS); `install-pi.sh` additionally installs `pi` plus its extensions: `pi-vett
 a local browser UI for plan review and replaces the shipped `plan-mode` (removed
 to avoid a `--plan` flag conflict).
 
+### CliffCompaction proxy
+
+The `ninfer` provider routes through [CliffCompaction](https://github.com/nguyenvuthientrang/cliffcompaction),
+a local API proxy that autocompacts long sessions under a token budget
+(installed via `uv tool install cliffcompaction`, run as a launchd daemon on
+`127.0.0.1:8257`). `models.json` points `ninfer.baseUrl` at the proxy, which
+forwards to the real ninfer server; `settings.json` disables pi's native
+auto-compaction (`compaction.enabled: false`) so only the proxy rewrites
+history. Manual `/compact` still works.
+
+- `cliff status` / `cliff watch` — health / live request view
+- `cliff restart` — pick up an upgrade
+- `cliff disable` — remove the daemon
+- Reconfigure: `cliff enable --no-env --port 8257 --threshold 128000 --openai-upstream http://192.168.1.184:8080`
+  (knobs: `--threshold`, `--keep-recent`, `--result-max-chars`, `--drop-thinking`), then `cliff restart`
+- Log: `~/Library/Logs/cliffcompaction.log`
+- Fail-open: if the daemon is down or can't parse a request, traffic passes
+  through unmodified. The prefix store is in-memory; after a daemon restart
+  the first request of a long session re-derives its prefix (one extra
+  compaction, no correctness impact).
+- Rollback: `cliff disable`, then revert `ninfer.baseUrl` to
+  `http://192.168.1.184:8080/v1` and `compaction.enabled` to `true`.
+
 ## Version management
 
 - **System tools** are pinned in a single block at the top of `install.sh`.
