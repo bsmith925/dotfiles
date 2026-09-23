@@ -59,7 +59,7 @@ jobs:
     name: arch (x86_64)
     runs-on: ubuntu-latest
     container:
-      image: archlinux/base
+      image: archlinux:base
     steps:
       - uses: actions/checkout@v7
 
