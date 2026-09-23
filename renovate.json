@@ -5,6 +5,11 @@
     ":dependencyDashboard"
   ],
   "labels": ["dependencies"],
+  "prHourlyLimit": 0,
+  "dependencyDashboardLabels": ["dependencies"],
+  "dependencyDashboardAutoclose": true,
+  "dependencyDashboardHeader": "Renovate updates for this repo. Every PR is CI-tested on 5 platforms (ubuntu x86/arm, debian, macos arm/intel) — merge when green. Checkboxes below force creation or rebase of the listed PRs.",
+  "dependencyDashboardFooter": "Runs Mondays 08:00 UTC, or manually from the Actions tab. Config: [renovate.json](renovate.json) · [Renovate docs](https://docs.renovatebot.com/)",
   "customManagers": [
     {
       "customType": "regex",
@@ -21,6 +26,16 @@
       "description": "Group all install.sh tool bumps into one PR",
       "matchManagers": ["custom.regex"],
       "groupName": "install.sh tools"
+    },
+    {
+      "description": "Group all GitHub Actions and runner label bumps into one PR",
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub Actions"
+    },
+    {
+      "description": "Group CI container image bumps into one PR",
+      "matchDatasources": ["docker"],
+      "groupName": "CI images"
     }
   ]
 }
