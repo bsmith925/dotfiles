@@ -7,6 +7,11 @@
   "defaultProvider": "ninfer",
   "defaultModel": "qwen3.8-27b",
   "externalEditor": "code --wait",
+  "compaction": {
+    "enabled": false,
+    "reserveTokens": 32768,
+    "keepRecentTokens": 20000
+  },
   "packages": [
     "npm:pi-vetter",
     "npm:pi-lens",
@@ -14,6 +19,7 @@
     "npm:@juicesharp/rpiv-ask-user-question",
     "npm:@juicesharp/rpiv-todo",
     "npm:pi-mcp-adapter",
-    "npm:@plannotator/pi-extension"
+    "npm:@plannotator/pi-extension",
+    "npm:pi-ask-agent-mode"
   ]
 }
