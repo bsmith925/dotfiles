@@ -28,14 +28,20 @@
       "groupName": "install.sh tools"
     },
     {
-      "description": "Group all GitHub Actions and runner label bumps into one PR",
+      "description": "Group all GitHub Actions bumps into one PR",
       "matchManagers": ["github-actions"],
       "groupName": "GitHub Actions"
     },
     {
-      "description": "Group CI container image bumps into one PR",
+      "description": "Exclude CI runner labels (macos/ubuntu) — CI infrastructure, bump deliberately",
+      "matchManagers": ["github-actions"],
+      "matchDepNames": ["macos", "ubuntu"],
+      "enabled": false
+    },
+    {
+      "description": "Exclude CI container images (debian) — CI infrastructure, bump deliberately",
       "matchDatasources": ["docker"],
-      "groupName": "CI images"
+      "enabled": false
     }
   ]
 }
