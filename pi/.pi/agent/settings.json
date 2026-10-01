@@ -5,7 +5,7 @@
   "outputPad": 1,
   "autocompleteMaxVisible": 3,
   "defaultProvider": "ninfer",
-  "defaultModel": "qwen3.8-27b",
+  "defaultModel": "swift-1.5-qwen3.8-27b",
   "externalEditor": "code --wait",
   "compaction": {
     "enabled": false,

@@ -5,7 +5,7 @@ unless a project-level AGENTS.md or CLAUDE.md overrides it.
 
 ## Environment
 - macOS, zsh. Primary local model is served by the `ninfer` provider
-  (`qwen3.8-27b`). Keep answers terse and concrete; lead with the result.
+  (`swift-1.5-qwen3.8-27b`, Swift 1.5, a Qwen3.8-27B fine-tune). Keep answers terse and concrete; lead with the result.
 - Prefer editing existing files over creating new ones. Match each project's
   existing style and layout.
 
