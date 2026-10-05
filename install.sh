@@ -35,7 +35,7 @@ NVIM_VERSION=0.12.5
 # renovate: datasource=golang-version depName=go
 GO_VERSION=1.27.1
 # renovate: datasource=github-releases depName=cli/cli
-GH_VERSION=2.101.0
+GH_VERSION=2.102.0
 # renovate: datasource=github-releases depName=jesseduffield/lazygit
 LAZYGIT_VERSION=0.65.1
 # renovate: datasource=github-releases depName=tree-sitter/tree-sitter
