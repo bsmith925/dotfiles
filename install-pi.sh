@@ -65,5 +65,7 @@ done
 echo ""
 echo "pi setup complete. Config is linked from $DOTFILES/pi into ~/.pi/agent."
 echo "note: pi-web-access web search needs an API key — set one per its README."
-echo "      pi-mcp-adapter is installed but idle until you configure an MCP server."
+echo "      mcp-atlassian (pi/.pi/agent/mcp.json) reads Jira/Confluence PATs from the"
+echo "      macOS Keychain: security add-generic-password -a \"\$USER\" -s mcp-atlassian-jira -w"
+echo "      (and -s mcp-atlassian-confluence)."
 echo "      plannotator opens a local browser UI for plan review (no account needed)."

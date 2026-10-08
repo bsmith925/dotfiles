@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "atlassian": {
+      "command": "uvx",
+      "args": ["mcp-atlassian==0.23.1"],
+      "env": {
+        "JIRA_URL": "https://development.getwellnetwork.com",
+        "JIRA_PERSONAL_TOKEN": "!security find-generic-password -s mcp-atlassian-jira -w",
+        "CONFLUENCE_URL": "https://knowledge.getwellnetwork.com",
+        "CONFLUENCE_PERSONAL_TOKEN": "!security find-generic-password -s mcp-atlassian-confluence -w",
+        "READ_ONLY_MODE": "true"
+      },
+      "directTools": [
+        "confluence_search",
+        "confluence_get_page",
+        "confluence_get_page_children",
+        "jira_search",
+        "jira_get_issue"
+      ]
+    }
+  }
+}
