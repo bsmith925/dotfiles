@@ -20,6 +20,7 @@
     "npm:@juicesharp/rpiv-todo",
     "npm:pi-mcp-adapter",
     "npm:@plannotator/pi-extension",
-    "npm:pi-ask-agent-mode"
+    "npm:pi-ask-agent-mode",
+    "git:github.com/ayghri/i-have-adhd@723af7d9afaf43eb871dbcce6129e2bf80de90d5"
   ]
 }
