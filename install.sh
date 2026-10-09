@@ -73,7 +73,10 @@ install_packages() {
     # Arch: pacman. The Arch package is `fd` (not Debian's `fd-find`). git+curl
     # are installed here, before install.sh's later `git clone` (tmux plugins)
     # needs them — the CI container has no git preinstalled (tarball checkout).
-    maybe_sudo pacman -Sy --noconfirm \
+    # -Syu, not -Sy: Arch does not support partial upgrades. With -Sy, new
+    # packages land on an old base (e.g. gtk4 4.24 on an older glib2, so
+    # ghostty fails with "undefined symbol: g_timeout_source_new_ns").
+    maybe_sudo pacman -Syu --noconfirm --needed \
       git curl unzip tmux ripgrep fd \
       base-devel xclip fontconfig
     return
@@ -292,7 +295,7 @@ install_ghostty() {
       echo "ghostty already installed"; return
     fi
     echo "installing ghostty..."
-    maybe_sudo pacman -S --noconfirm ghostty \
+    maybe_sudo pacman -S --noconfirm --needed ghostty \
       || echo "WARNING: ghostty install failed; install manually: https://ghostty.org/download" >&2
     return
   fi
