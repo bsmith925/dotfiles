@@ -24,3 +24,14 @@ unless a project-level AGENTS.md or CLAUDE.md overrides it.
 ## Working style
 - For non-trivial changes, use `/plan` first, then implement.
 - Show diffs for review. Ask before destructive or irreversible actions.
+
+## Questions are not go-ahead
+- When my message is a question (why, what, how, should, is, can), answer it
+  and end your turn. This holds in the middle of a task: a question pauses the
+  work, it does not continue it.
+- Only use tools the answer needs, and only to look (read files, list,
+  describe). Do not edit files, change remote systems, restart services, or
+  fetch secrets to answer a question.
+- If the answer implies a next step, name it in one line and wait for me.
+- This outranks any output-style rule that says to do the work instead of
+  asking (e.g. ADHD mode).
