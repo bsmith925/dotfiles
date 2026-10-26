@@ -31,19 +31,19 @@ CURL_RETRY=(--retry 3 --retry-delay 2 --retry-connrefused)
 # These pins are Linux-only; macOS takes current Homebrew versions (Brewfile).
 #
 # renovate: datasource=github-releases depName=neovim/neovim
-NVIM_VERSION=0.12.5
+NVIM_VERSION=0.12.6
 # renovate: datasource=golang-version depName=go
-GO_VERSION=1.27.1
+GO_VERSION=1.27.3
 # renovate: datasource=github-releases depName=cli/cli
-GH_VERSION=2.101.0
+GH_VERSION=2.103.2
 # renovate: datasource=github-releases depName=jesseduffield/lazygit
-LAZYGIT_VERSION=0.65.1
+LAZYGIT_VERSION=0.66.2
 # renovate: datasource=github-releases depName=tree-sitter/tree-sitter
-TREE_SITTER_VERSION=0.27.0
+TREE_SITTER_VERSION=0.27.1
 # renovate: datasource=node-version depName=node versioning=node
-NODE_VERSION=24.21.0
+NODE_VERSION=24.22.1
 # renovate: datasource=github-releases depName=junegunn/fzf
-FZF_VERSION=0.74.4
+FZF_VERSION=0.74.5
 # renovate: datasource=github-releases depName=ryanoasis/nerd-fonts
 NERD_FONT_VERSION=3.5.1
 # renovate: datasource=github-releases depName=mkasberg/ghostty-ubuntu versioning=loose
