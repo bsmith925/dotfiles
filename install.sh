@@ -41,7 +41,7 @@ LAZYGIT_VERSION=0.65.1
 # renovate: datasource=github-releases depName=tree-sitter/tree-sitter
 TREE_SITTER_VERSION=0.27.0
 # renovate: datasource=node-version depName=node versioning=node
-NODE_VERSION=24.21.0
+NODE_VERSION=26.13.0
 # renovate: datasource=github-releases depName=junegunn/fzf
 FZF_VERSION=0.74.4
 # renovate: datasource=github-releases depName=ryanoasis/nerd-fonts
