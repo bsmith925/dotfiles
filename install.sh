@@ -31,23 +31,23 @@ CURL_RETRY=(--retry 3 --retry-delay 2 --retry-connrefused)
 # These pins are Linux-only; macOS takes current Homebrew versions (Brewfile).
 #
 # renovate: datasource=github-releases depName=neovim/neovim
-NVIM_VERSION=0.12.5
+NVIM_VERSION=0.12.6
 # renovate: datasource=golang-version depName=go
-GO_VERSION=1.27.1
+GO_VERSION=1.27.3
 # renovate: datasource=github-releases depName=cli/cli
-GH_VERSION=2.101.0
+GH_VERSION=2.103.3
 # renovate: datasource=github-releases depName=jesseduffield/lazygit
-LAZYGIT_VERSION=0.65.1
+LAZYGIT_VERSION=0.66.3
 # renovate: datasource=github-releases depName=tree-sitter/tree-sitter
-TREE_SITTER_VERSION=0.27.0
+TREE_SITTER_VERSION=0.27.2
 # renovate: datasource=node-version depName=node versioning=node
-NODE_VERSION=24.21.0
+NODE_VERSION=24.22.2
 # renovate: datasource=github-releases depName=junegunn/fzf
-FZF_VERSION=0.74.4
+FZF_VERSION=0.75.0
 # renovate: datasource=github-releases depName=ryanoasis/nerd-fonts
 NERD_FONT_VERSION=3.5.1
 # renovate: datasource=github-releases depName=mkasberg/ghostty-ubuntu versioning=loose
-GHOSTTY_DEB_RELEASE=1.3.1-0-ppa2
+GHOSTTY_DEB_RELEASE=1.4.0-0-ppa2
 
 # Run with sudo when not root (containers run as root; desktops don't)
 maybe_sudo() { [ "$(id -u)" -eq 0 ] && "$@" || sudo "$@"; }
